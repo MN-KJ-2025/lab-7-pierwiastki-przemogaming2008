@@ -12,6 +12,15 @@ import numpy.polynomial.polynomial as nppoly
 
 
 def roots_20(coef: np.ndarray) -> tuple[np.ndarray, np.ndarray] | None:
+    if not isinstance(coef, np.ndarray) or coef.ndim != 1:
+        return None
+    
+    disturbance = np.random.randn(coef.size) * 1e-10
+    coef_disturbed = coef + disturbance
+    
+    roots = nppoly.polyroots(coef_disturbed)
+
+    return coef_disturbed, roots
     """Funkcja wyznaczająca miejsca zerowe wielomianu funkcją
     `nppoly.polyroots()`, najpierw lekko zaburzając wejściowe współczynniki 
     wielomianu (N(0,1) * 1e-10).
@@ -25,7 +34,6 @@ def roots_20(coef: np.ndarray) -> tuple[np.ndarray, np.ndarray] | None:
             - Wektor miejsc zerowych (m,).
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
 
 
 def frob_a(coef: np.ndarray) -> np.ndarray | None:
@@ -48,7 +56,25 @@ def frob_a(coef: np.ndarray) -> np.ndarray | None:
         (np.ndarray): Macierz Frobeniusa o rozmiarze (n,n).
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    if not isinstance(coef, np.ndarray) or coef.ndim != 1:
+        return None
+    if coef.size < 2 or coef[0] == 0:
+        return None
+
+    n = coef.size - 1
+
+    if coef.size == 2:
+        return np.array([[-coef[1] / coef[0]]])
+
+    F = np.zeros((n, n), dtype=float)
+
+    for i in range(n - 1):
+        F[i, i + 1] = 1
+
+    F[-1, :] = -coef[1:] / coef[0]
+
+    return F
+
 
 
 def is_nonsingular(A: np.ndarray) -> bool | None:
@@ -63,4 +89,11 @@ def is_nonsingular(A: np.ndarray) -> bool | None:
             wypadku `False`.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    if not isinstance(A, np.ndarray) or A.ndim != 2 or A.shape[0] != A.shape[1]:
+        return None
+
+    det = np.linalg.det(A)
+
+    eps = 1e-12 
+
+    return abs(det) > eps
